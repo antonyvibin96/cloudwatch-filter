@@ -9,7 +9,7 @@ const AWS = require('aws-sdk');
 AWS.config.loadFromPath('./config.json');
 var cloudwatch = new AWS.CloudWatchLogs();
 const client = new AWS_CW.CloudWatchLogsClient({ region: 'ap-southeast-1' });
-const logGroupName = '/ecs/zycc-dev-sg-td-clinic-cloud'; //'/ecs/zyum-dev-sg-td-leads';
+const logGroupName = '/ecs/zyum-dev-sg-td-leads'; //'/ecs/zyum-dev-sg-td-leads';
 
 getLogs();
 
@@ -45,9 +45,9 @@ async function getLogs() {
   // Translate results into an array of key/value pairs, excluding the pointer field
   const logs = await getCloudWatchLogs({
     logGroupName,
-    startTime: 1666985400000,
-    endTime: 1666985410000,
-    queryString: 'fields @timestamp, @message|sort @timestamp asc | limit 3',
+    startTime: 1667082044000,
+    endTime: 1667082044000 + 10 * 60 * 1000,
+    queryString: 'fields @timestamp, @message|sort @timestamp asc | limit 1',
   });
   const formattedInitialLogs = formatLogs(logs);
   writeToFile(formattedInitialLogs, 'initialLogs.json');
@@ -57,8 +57,10 @@ async function getLogs() {
   await Promise.all(
     formattedInitialLogs.map(async (log) => {
       const timestamp = log['@timestamp'];
-      const timeEpoch = Date.parse(timestamp);
-      const epochDiff = 60 * 10 * 1000;
+      const timeEpoch = Date.parse(timestamp) + 330 * 60 * 1000;
+      console.log(`timeStamp : ${timestamp} | timeEpoch : ${timeEpoch}`);
+
+      const epochDiff = 60 * 2 * 1000;
       const startTime = timeEpoch - epochDiff;
       const endTime = timeEpoch + epochDiff;
       console.log(`startTime  : ${startTime} | endTime : ${endTime}`);
